@@ -1,78 +1,131 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import SharedHeader from "../../components/shared-header"
+import { useEffect, useState } from "react"
 import Camera from "../../components/camera"
+import SharedHeader from "../../components/shared-header"
 import Button from "../../components/ui/button"
 import styles from "./face-capture.module.css"
 
 // In-memory storage for face images
 const faceImageStore = {
-  register: null,
   login: null,
 }
 
 export default function FaceCapture() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const mode = searchParams.get("mode") || "register"
+  const mode = searchParams.get("mode") || "login"
   const [captureComplete, setCaptureComplete] = useState(false)
   const [userData, setUserData] = useState(null)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    // Check if we have user data for the appropriate mode
+    // Only allow login mode
+    console.log("Face capture mode:", mode)
+    if (mode !== "login") {
+      console.log("Invalid mode, redirecting to /login")
+      router.push("/login")
+      return
+    }
+    if (typeof window !== "undefined" && !window.loginData) {
+      console.log("No login data found, redirecting to /login")
+      router.push("/login")
+    }
     if (typeof window !== "undefined") {
-      if (mode === "register" && !window.userData) {
-        // If no registration data, redirect back to register
-        router.push("/register")
-      } else if (mode === "login" && !window.loginData) {
-        // If no login data, redirect back to login
-        router.push("/login")
-      }
-
-      // Set user data from window object
-      if (mode === "register") {
-        setUserData(window.userData)
-      } else {
-        setUserData(window.loginData)
-      }
+      setUserData(window.loginData)
+      console.log("Loaded userData for login:", window.loginData)
     }
   }, [mode, router])
 
-  const handleCapture = (imageData) => {
+  const handleCapture = async (imageData) => {
     // Store the image in our in-memory object
     if (imageData) {
       faceImageStore[mode] = imageData
+      console.log("Face image captured for login:", imageData)
     }
 
     setCaptureComplete(true)
+    setError(null)
+    console.log("Face capture complete, sending authentication request...")
 
-    // Simulate processing
-    setTimeout(() => {
-      if (mode === "register") {
-        // After registration, redirect to login page
-        router.push("/login?registered=true")
-      } else {
-        // For login mode, set authentication flag and redirect to dashboard
-        if (typeof window !== "undefined") {
-          window.isAuthenticated = true
-          window.authenticatedUser = window.userData || {
-            username: window.loginData?.email?.split("@")[0] || "User",
-            email: window.loginData?.email || "user@example.com",
-          }
-        }
-        router.push("/dashboard")
+    try {
+      const loginData = typeof window !== "undefined" ? window.loginData : null
+      if (!loginData) {
+        setError("No login data found. Please login again.")
+        router.push("/login")
+        return
       }
-    }, 1000)
+
+      // Prepare FormData for multipart/form-data POST
+      const formData = new FormData()
+      formData.append("username", loginData.email)
+      formData.append("password", loginData.password)
+
+      // Convert base64 image to Blob if needed
+      let blob
+      if (imageData.startsWith("data:")) {
+        const arr = imageData.split(",")
+        const mime = arr[0].match(/:(.*?);/)[1]
+        const bstr = atob(arr[1])
+        let n = bstr.length
+        const u8arr = new Uint8Array(n)
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n)
+        }
+        blob = new Blob([u8arr], { type: mime })
+      } else {
+        blob = imageData // fallback
+      }
+      formData.append("face", blob, "face.png")
+
+      const response = await fetch("http://127.0.0.1:8000/signin", {
+        method: "POST",
+        body: formData,
+      })
+
+      let data
+      try {
+        data = await response.json()
+      } catch {
+        data = {}
+      }
+
+      if (!response.ok) {
+        // Handle FastAPI validation errors (422)
+        if (data && data.detail) {
+          if (Array.isArray(data.detail)) {
+            setError(data.detail.map(e => e.msg).join(", "))
+          } else if (typeof data.detail === "string") {
+            setError(data.detail)
+          } else {
+            setError("Face verification failed. Please try again.")
+          }
+        } else {
+          setError("Face verification failed. Please try again.")
+        }
+        setCaptureComplete(false)
+        return
+      }
+
+      // For login mode, set authentication flag and redirect to dashboard
+      if (typeof window !== "undefined") {
+        window.isAuthenticated = true
+        window.authenticatedUser = {
+          username: loginData.email?.split("@")[0] || "User",
+          email: loginData.email || "user@example.com",
+        }
+        console.log("User authenticated, redirecting to /dashboard")
+      }
+      router.push("/dashboard")
+    } catch (err) {
+      setError("Network error. Please try again.")
+      setCaptureComplete(false)
+    }
   }
 
-  const pageTitle = mode === "register" ? "Register Your Face" : "Verify Your Identity"
-
-  const pageDescription =
-    mode === "register"
-      ? "We'll use your facial features to secure your account"
-      : "Look at the camera to verify your identity"
+  const pageTitle = "Verify Your Identity"
+  const pageDescription = "Look at the camera to verify your identity"
 
   return (
     <>
@@ -86,10 +139,14 @@ export default function FaceCapture() {
 
               <Camera onCapture={handleCapture} mode={mode} />
 
+              {error && (
+                <div className={styles.errorMessage}>{typeof error === "string" ? error : "An error occurred."}</div>
+              )}
+
               <div className={styles.captureActions}>
                 <Button
                   variant="outline"
-                  href={mode === "register" ? "/register" : "/login"}
+                  href="/login"
                   disabled={captureComplete}
                 >
                   Go Back
