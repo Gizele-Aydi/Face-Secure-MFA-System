@@ -1,8 +1,10 @@
 import "../styles/globals.css"
-import { Inter } from "next/font/google"
+import { Poppins } from "next/font/google"
+import ThemeProvider from "../components/theme-provider"
 
-const inter = Inter({
+const poppins = Poppins({
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
   variable: "--font-sans",
 })
@@ -14,9 +16,11 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className={inter.variable}>
-        <div className="page">{children}</div>
+    <html lang="en" suppressHydrationWarning>
+      <body className={poppins.variable}>
+        <ThemeProvider>
+          <div className="page">{children}</div>
+        </ThemeProvider>
       </body>
     </html>
   )

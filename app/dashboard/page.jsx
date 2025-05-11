@@ -2,45 +2,51 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import Header from "../components/header"
-import Button from "../components/ui/button"
+import SharedHeader from "../../components/shared-header"
+import Button from "../../components/ui/button"
 import styles from "./dashboard.module.css"
 
 export default function Dashboard() {
   const router = useRouter()
   const [user, setUser] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Check if user is logged in
-    const userData = localStorage.getItem("user")
-    const faceVerified = localStorage.getItem("faceVerified")
+    // Check if user is authenticated
+    if (typeof window !== "undefined") {
+      if (!window.isAuthenticated) {
+        router.push("/login")
+        return
+      }
 
-    if (!userData || !faceVerified) {
-      router.push("/login")
-      return
-    }
-
-    try {
-      setUser(JSON.parse(userData))
-    } catch (error) {
-      console.error("Error parsing user data:", error)
-      router.push("/login")
+      // Get user data
+      setUser(
+        window.authenticatedUser || {
+          username: "User",
+          email: "user@example.com",
+        },
+      )
+      setIsLoading(false)
     }
   }, [router])
 
   const handleLogout = () => {
-    // Clear user data
-    localStorage.removeItem("user")
-    localStorage.removeItem("faceVerified")
+    // Clear authentication
+    if (typeof window !== "undefined") {
+      window.isAuthenticated = false
+      window.authenticatedUser = null
+      window.userData = null
+      window.loginData = null
+    }
 
     // Redirect to home
     router.push("/")
   }
 
-  if (!user) {
+  if (isLoading) {
     return (
       <>
-        <Header />
+        <SharedHeader />
         <main className="page-content">
           <div className="container">
             <div className={styles.loadingContainer}>
@@ -55,7 +61,7 @@ export default function Dashboard() {
 
   return (
     <>
-      <Header />
+      <SharedHeader />
       <main className="page-content">
         <div className="container">
           <div className={styles.dashboardContainer}>
@@ -90,13 +96,6 @@ export default function Dashboard() {
                     <div className={styles.securityInfo}>
                       <h3>Password Protection</h3>
                       <p>Strong password detected</p>
-                    </div>
-                  </div>
-                  <div className={styles.securityItem}>
-                    <div className={`${styles.securityIcon} ${styles.warning}`}>!</div>
-                    <div className={styles.securityInfo}>
-                      <h3>Two-Factor Authentication</h3>
-                      <p>Not enabled (recommended)</p>
                     </div>
                   </div>
                 </div>

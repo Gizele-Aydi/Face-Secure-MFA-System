@@ -1,28 +1,69 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import Header from "../components/header"
-import Camera from "../components/camera"
-import Button from "../components/ui/button"
+import SharedHeader from "../../components/shared-header"
+import Camera from "../../components/camera"
+import Button from "../../components/ui/button"
 import styles from "./face-capture.module.css"
+
+// In-memory storage for face images
+const faceImageStore = {
+  register: null,
+  login: null,
+}
 
 export default function FaceCapture() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const mode = searchParams.get("mode") || "register"
   const [captureComplete, setCaptureComplete] = useState(false)
+  const [userData, setUserData] = useState(null)
 
-  const handleCapture = () => {
+  useEffect(() => {
+    // Check if we have user data for the appropriate mode
+    if (typeof window !== "undefined") {
+      if (mode === "register" && !window.userData) {
+        // If no registration data, redirect back to register
+        router.push("/register")
+      } else if (mode === "login" && !window.loginData) {
+        // If no login data, redirect back to login
+        router.push("/login")
+      }
+
+      // Set user data from window object
+      if (mode === "register") {
+        setUserData(window.userData)
+      } else {
+        setUserData(window.loginData)
+      }
+    }
+  }, [mode, router])
+
+  const handleCapture = (imageData) => {
+    // Store the image in our in-memory object
+    if (imageData) {
+      faceImageStore[mode] = imageData
+    }
+
     setCaptureComplete(true)
 
     // Simulate processing
     setTimeout(() => {
-      // Store face verification status in localStorage for demo
-      localStorage.setItem("faceVerified", "true")
-
-      // Redirect to dashboard
-      router.push("/dashboard")
+      if (mode === "register") {
+        // After registration, redirect to login page
+        router.push("/login?registered=true")
+      } else {
+        // For login mode, set authentication flag and redirect to dashboard
+        if (typeof window !== "undefined") {
+          window.isAuthenticated = true
+          window.authenticatedUser = window.userData || {
+            username: window.loginData?.email?.split("@")[0] || "User",
+            email: window.loginData?.email || "user@example.com",
+          }
+        }
+        router.push("/dashboard")
+      }
     }, 1000)
   }
 
@@ -35,7 +76,7 @@ export default function FaceCapture() {
 
   return (
     <>
-      <Header />
+      <SharedHeader />
       <main className="page-content">
         <div className="container">
           <div className={styles.captureContainer}>

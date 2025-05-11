@@ -3,8 +3,9 @@ import { Inter } from "next/font/google"
 
 const inter = Inter({
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
-  variable: "--font-sans",
+  variable: "--font-inter",
 })
 
 export const metadata = {
@@ -14,8 +15,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className={inter.variable}>
+    <html lang="en" suppressHydrationWarning className={inter.variable}>
+      <body>
         <div className="page">{children}</div>
       </body>
     </html>

@@ -2,11 +2,35 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import Header from "../components/header"
-import FormInput from "../components/ui/form-input"
-import Button from "../components/ui/button"
-import PasswordStrength from "../components/ui/password-strength"
+import SharedHeader from "../../components/shared-header"
+import FormInput from "../../components/ui/form-input"
+import Button from "../../components/ui/button"
+import PasswordStrength from "../../components/ui/password-strength"
 import styles from "./register.module.css"
+
+// Common passwords list (abbreviated for example)
+const COMMON_PASSWORDS = [
+  "password",
+  "123456",
+  "qwerty",
+  "admin",
+  "welcome",
+  "letmein",
+  "monkey",
+  "abc123",
+  "111111",
+  "password123",
+  "12345678",
+  "sunshine",
+  "princess",
+  "football",
+  "123123",
+  "baseball",
+  "dragon",
+  "master",
+  "superman",
+  "trustno1",
+]
 
 export default function Register() {
   const router = useRouter()
@@ -50,11 +74,46 @@ export default function Register() {
       newErrors.username = "Username must be at least 3 characters"
     }
 
-    // Password validation
+    // Password validation - OWASP compliant
     if (!formData.password) {
       newErrors.password = "Password is required"
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters"
+    } else {
+      // Collect all password errors
+      const passwordErrors = []
+
+      if (formData.password.length < 12) {
+        passwordErrors.push("Must be at least 12 characters")
+      }
+
+      if (!/[A-Z]/.test(formData.password)) {
+        passwordErrors.push("Must include at least one uppercase letter")
+      }
+
+      if (!/[a-z]/.test(formData.password)) {
+        passwordErrors.push("Must include at least one lowercase letter")
+      }
+
+      if (!/[0-9]/.test(formData.password)) {
+        passwordErrors.push("Must include at least one number")
+      }
+
+      if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(formData.password)) {
+        passwordErrors.push("Must include at least one special character")
+      }
+
+      if (/\s/.test(formData.password)) {
+        passwordErrors.push("Must not contain whitespace")
+      }
+
+      // Check for common passwords
+      if (COMMON_PASSWORDS.includes(formData.password.toLowerCase())) {
+        passwordErrors.push("Password is too common and easily guessed")
+      }
+
+      // If there are any password errors, join them with line breaks
+      if (passwordErrors.length > 0) {
+        newErrors.password = passwordErrors.join(", ")
+      }
     }
 
     // Confirm password validation
@@ -75,16 +134,16 @@ export default function Register() {
       // Simulate API call
       setTimeout(() => {
         setIsSubmitting(false)
-        // Store user data in localStorage for demo purposes
-        localStorage.setItem(
-          "user",
-          JSON.stringify({
+
+        // Store user data in memory (global variable)
+        if (typeof window !== "undefined") {
+          window.userData = {
             email: formData.email,
             username: formData.username,
-          }),
-        )
+          }
+        }
 
-        // Redirect to face capture page
+        // Redirect to face capture after successful registration
         router.push("/face-capture?mode=register")
       }, 1000)
     }
@@ -92,7 +151,7 @@ export default function Register() {
 
   return (
     <>
-      <Header />
+      <SharedHeader />
       <main className="page-content">
         <div className="container">
           <div className={styles.formContainer}>
@@ -110,6 +169,7 @@ export default function Register() {
                   error={errors.email}
                   placeholder="your.email@example.com"
                   required
+                  aria-required="true"
                 />
 
                 <FormInput
@@ -121,6 +181,7 @@ export default function Register() {
                   error={errors.username}
                   placeholder="Choose a username"
                   required
+                  aria-required="true"
                 />
 
                 <FormInput
@@ -130,8 +191,10 @@ export default function Register() {
                   value={formData.password}
                   onChange={handleChange}
                   error={errors.password}
-                  placeholder="Create a strong password"
+                  placeholder="Min. 12 chars with letters, numbers & symbols"
                   required
+                  aria-required="true"
+                  aria-describedby="password-requirements"
                 />
 
                 <PasswordStrength password={formData.password} />
@@ -145,6 +208,7 @@ export default function Register() {
                   error={errors.confirmPassword}
                   placeholder="Confirm your password"
                   required
+                  aria-required="true"
                 />
 
                 <Button type="submit" fullWidth disabled={isSubmitting}>

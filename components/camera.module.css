@@ -9,7 +9,7 @@
 .videoContainer {
   position: relative;
   width: 100%;
-  max-width: 400px;
+  max-width: 500px; /* Increased from 400px */
   aspect-ratio: 4 / 3;
   border-radius: 1rem;
   overflow: hidden;
@@ -22,28 +22,57 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: scaleX(-1); /* Mirror effect */
 }
 
-.faceGuide {
+.hiddenCanvas {
+  display: none;
+}
+
+/* Oval face guide */
+.faceGuideOval {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  border: 2px dashed rgba(255, 255, 255, 0.5);
+  width: 220px;
+  height: 280px;
+  border-radius: 50% / 60%;
+  border: 2px dashed rgba(255, 255, 255, 0.7);
   pointer-events: none;
+  animation: pulse 3s infinite ease-in-out;
 }
 
 .instructions {
   text-align: center;
-  max-width: 400px;
+  max-width: 500px; /* Increased from 400px */
 }
 
 .instructions p {
   margin-bottom: 1rem;
+}
+
+.instructionsList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem;
+  text-align: left;
+}
+
+.instructionsList li {
+  margin-bottom: 0.5rem;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.instructionsList li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.5rem;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--primary);
 }
 
 .permissionPrompt,
@@ -55,7 +84,7 @@
   justify-content: center;
   gap: 1rem;
   width: 100%;
-  max-width: 400px;
+  max-width: 500px; /* Increased from 400px */
   aspect-ratio: 4 / 3;
   background-color: var(--card);
   border-radius: 1rem;
@@ -64,8 +93,8 @@
 }
 
 .permissionIcon {
-  font-size: 2.5rem;
   margin-bottom: 0.5rem;
+  color: var(--primary);
 }
 
 .spinner {
@@ -78,30 +107,32 @@
 }
 
 .errorIcon {
-  font-size: 2rem;
+  color: var(--error);
 }
 
 .capturing {
   box-shadow: 0 0 0 4px var(--primary), 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
-.scanOverlay {
+.countdownOverlay {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   pointer-events: none;
 }
 
-.scanLine {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 4px;
-  background: linear-gradient(90deg, transparent, var(--primary), transparent);
-  animation: scan 2s linear infinite;
+.countdown {
+  font-size: 6rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  animation: pulse 1s infinite;
 }
 
 .successOverlay {
@@ -117,15 +148,14 @@
 }
 
 .successIcon {
-  font-size: 4rem;
-  color: white;
-  background-color: var(--success);
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 80px;
+  height: 80px;
+  background-color: var(--success);
+  color: white;
+  border-radius: 50%;
   animation: pulse 0.5s ease-out;
 }
 
@@ -144,29 +174,18 @@
   }
 }
 
-@keyframes scan {
-  0% {
-    top: 0;
-  }
-  50% {
-    top: 100%;
-  }
-  50.1% {
-    top: 0;
-  }
-  100% {
-    top: 100%;
-  }
-}
-
 @keyframes pulse {
   0% {
-    transform: scale(0);
-    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.98);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
   }
   100% {
-    transform: scale(1);
-    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.98);
+    opacity: 0.8;
   }
 }
 
@@ -175,8 +194,8 @@
     max-width: 100%;
   }
 
-  .faceGuide {
-    width: 150px;
-    height: 150px;
+  .faceGuideOval {
+    width: 180px;
+    height: 230px;
   }
 }

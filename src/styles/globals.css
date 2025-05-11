@@ -1,18 +1,19 @@
 :root {
-  --primary: #3a86ff;
-  --primary-dark: #2667cc;
-  --secondary: #8338ec;
-  --accent: #ff006e;
-  --success: #06d6a0;
-  --warning: #ffbe0b;
-  --error: #ef476f;
+  --primary: #06b6d4; /* Teal */
+  --primary-dark: #0891b2;
+  --secondary: #8b5cf6; /* Violet */
+  --secondary-dark: #7c3aed;
+  --accent: #ec4899; /* Pink */
+  --success: #10b981; /* Green */
+  --warning: #f59e0b; /* Amber */
+  --error: #ef4444; /* Red */
   --background: #ffffff;
-  --foreground: #1a1a1a;
-  --card: #f8f9fa;
-  --card-foreground: #1a1a1a;
-  --border: #e9ecef;
-  --input: #f1f3f5;
-  --ring: rgba(58, 134, 255, 0.3);
+  --foreground: #0f172a;
+  --card: #f8fafc;
+  --card-foreground: #0f172a;
+  --border: #e2e8f0;
+  --input: #f1f5f9;
+  --ring: rgba(6, 182, 212, 0.3);
 
   --radius: 0.5rem;
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -22,15 +23,13 @@
   --side-padding: 1.5rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #121212;
-    --foreground: #f8f9fa;
-    --card: #1e1e1e;
-    --card-foreground: #f8f9fa;
-    --border: #2c2c2c;
-    --input: #2c2c2c;
-  }
+html.dark {
+  --background: #0f172a;
+  --foreground: #f8fafc;
+  --card: #1e293b;
+  --card-foreground: #f8fafc;
+  --border: #334155;
+  --input: #1e293b;
 }
 
 * {
@@ -220,7 +219,7 @@ textarea {
 }
 
 .btn-secondary:hover {
-  background-color: #6a2cc5;
+  background-color: var(--secondary-dark);
 }
 
 .btn-outline {
@@ -239,7 +238,7 @@ textarea {
 }
 
 .btn-success:hover {
-  background-color: #05b386;
+  background-color: #059669;
 }
 
 .btn-error {
@@ -248,7 +247,7 @@ textarea {
 }
 
 .btn-error:hover {
-  background-color: #d93d62;
+  background-color: #dc2626;
 }
 
 /* Card styles */
@@ -287,4 +286,27 @@ textarea {
   .card {
     padding: 1.25rem;
   }
+}
+
+/* Page transitions */
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.page-transition-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 300ms, transform 300ms;
 }

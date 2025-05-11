@@ -1,4 +1,5 @@
 "use client"
+
 import { useRouter } from "next/navigation"
 import Header from "../../components/header"
 import Button from "../../components/ui/button"
@@ -49,13 +50,6 @@ export default function Dashboard() {
                     <div className={styles.securityInfo}>
                       <h3>Password Protection</h3>
                       <p>Strong password detected</p>
-                    </div>
-                  </div>
-                  <div className={styles.securityItem}>
-                    <div className={`${styles.securityIcon} ${styles.warning}`}>!</div>
-                    <div className={styles.securityInfo}>
-                      <h3>Two-Factor Authentication</h3>
-                      <p>Not enabled (recommended)</p>
                     </div>
                   </div>
                 </div>

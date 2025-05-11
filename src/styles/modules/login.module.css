@@ -29,6 +29,29 @@
   margin-bottom: 2rem;
 }
 
+.successMessage {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 1px solid var(--success);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.successIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  background-color: var(--success);
+  color: white;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 .form {
   display: flex;
   flex-direction: column;

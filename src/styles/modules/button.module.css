@@ -43,7 +43,7 @@
 }
 
 .secondary:hover:not(:disabled) {
-  background-color: #6a2cc5;
+  background-color: var(--secondary-dark);
 }
 
 .outline {
@@ -62,7 +62,7 @@
 }
 
 .success:hover:not(:disabled) {
-  background-color: #05b386;
+  background-color: #059669;
 }
 
 .error {
@@ -71,7 +71,7 @@
 }
 
 .error:hover:not(:disabled) {
-  background-color: #d93d62;
+  background-color: #dc2626;
 }
 
 .button:disabled {

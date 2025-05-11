@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import Header from "../../components/header"
 import FormInput from "../../components/ui/form-input"
 import Button from "../../components/ui/button"
+import PasswordStrength from "../../components/ui/password-strength"
 import styles from "../../styles/modules/register.module.css"
 
 export default function Register() {
@@ -47,9 +48,30 @@ export default function Register() {
       newErrors.username = "Username is required"
     }
 
-    // Password validation - only check if it exists
+    // Password validation - OWASP compliant
     if (!formData.password) {
       newErrors.password = "Password is required"
+    } else {
+      // Check password requirements
+      if (formData.password.length < 12) {
+        newErrors.password = "Password must be at least 12 characters"
+      } else if (!/[A-Z]/.test(formData.password)) {
+        newErrors.password = "Password must include at least one uppercase letter"
+      } else if (!/[a-z]/.test(formData.password)) {
+        newErrors.password = "Password must include at least one lowercase letter"
+      } else if (!/[0-9]/.test(formData.password)) {
+        newErrors.password = "Password must include at least one number"
+      } else if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(formData.password)) {
+        newErrors.password = "Password must include at least one special character"
+      } else if (/\s/.test(formData.password)) {
+        newErrors.password = "Password must not contain whitespace"
+      }
+
+      // Check for common passwords (abbreviated list)
+      const commonPasswords = ["password", "123456", "qwerty", "admin", "welcome"]
+      if (commonPasswords.includes(formData.password.toLowerCase())) {
+        newErrors.password = "Password is too common and easily guessed"
+      }
     }
 
     // Confirm password validation
@@ -71,8 +93,8 @@ export default function Register() {
       setTimeout(() => {
         setIsSubmitting(false)
 
-        // Redirect to face capture page
-        router.push("/face-capture?mode=register")
+        // Redirect to login page after successful registration
+        router.push("/login?registered=true")
       }, 1000)
     }
   }
@@ -97,6 +119,7 @@ export default function Register() {
                   error={errors.email}
                   placeholder="your.email@example.com"
                   required
+                  aria-required="true"
                 />
 
                 <FormInput
@@ -108,6 +131,7 @@ export default function Register() {
                   error={errors.username}
                   placeholder="Choose a username"
                   required
+                  aria-required="true"
                 />
 
                 <FormInput
@@ -117,9 +141,13 @@ export default function Register() {
                   value={formData.password}
                   onChange={handleChange}
                   error={errors.password}
-                  placeholder="Create a password"
+                  placeholder="Create a secure password"
                   required
+                  aria-required="true"
+                  aria-describedby="password-requirements"
                 />
+
+                <PasswordStrength password={formData.password} />
 
                 <FormInput
                   label="Confirm Password"
@@ -130,6 +158,7 @@ export default function Register() {
                   error={errors.confirmPassword}
                   placeholder="Confirm your password"
                   required
+                  aria-required="true"
                 />
 
                 <Button type="submit" fullWidth disabled={isSubmitting}>
