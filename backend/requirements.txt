@@ -1,5 +1,6 @@
 fastapi
 uvicorn[standard]
+python-multipart
 SQLAlchemy
 psycopg2-binary
 passlib[bcrypt]
@@ -11,3 +12,4 @@ opencv-python
 numpy
 jose
 passlib
+cors
