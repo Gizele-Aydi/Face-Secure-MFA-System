@@ -1,36 +1,12 @@
 "use client"
 
-import { useState } from "react"
 import { useRouter } from "next/navigation"
-import SharedHeader from "../../components/shared-header"
-import FormInput from "../../components/ui/form-input"
+import { useState } from "react"
+import Header from "../../components/header"
 import Button from "../../components/ui/button"
+import FormInput from "../../components/ui/form-input"
 import PasswordStrength from "../../components/ui/password-strength"
 import styles from "./register.module.css"
-
-// Common passwords list (abbreviated for example)
-const COMMON_PASSWORDS = [
-  "password",
-  "123456",
-  "qwerty",
-  "admin",
-  "welcome",
-  "letmein",
-  "monkey",
-  "abc123",
-  "111111",
-  "password123",
-  "12345678",
-  "sunshine",
-  "princess",
-  "football",
-  "123123",
-  "baseball",
-  "dragon",
-  "master",
-  "superman",
-  "trustno1",
-]
 
 export default function Register() {
   const router = useRouter()
@@ -70,49 +46,31 @@ export default function Register() {
     // Username validation
     if (!formData.username) {
       newErrors.username = "Username is required"
-    } else if (formData.username.length < 3) {
-      newErrors.username = "Username must be at least 3 characters"
     }
 
     // Password validation - OWASP compliant
     if (!formData.password) {
       newErrors.password = "Password is required"
     } else {
-      // Collect all password errors
-      const passwordErrors = []
-
+      // Check password requirements
       if (formData.password.length < 12) {
-        passwordErrors.push("Must be at least 12 characters")
+        newErrors.password = "Password must be at least 12 characters"
+      } else if (!/[A-Z]/.test(formData.password)) {
+        newErrors.password = "Password must include at least one uppercase letter"
+      } else if (!/[a-z]/.test(formData.password)) {
+        newErrors.password = "Password must include at least one lowercase letter"
+      } else if (!/[0-9]/.test(formData.password)) {
+        newErrors.password = "Password must include at least one number"
+      } else if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(formData.password)) {
+        newErrors.password = "Password must include at least one special character"
+      } else if (/\s/.test(formData.password)) {
+        newErrors.password = "Password must not contain whitespace"
       }
 
-      if (!/[A-Z]/.test(formData.password)) {
-        passwordErrors.push("Must include at least one uppercase letter")
-      }
-
-      if (!/[a-z]/.test(formData.password)) {
-        passwordErrors.push("Must include at least one lowercase letter")
-      }
-
-      if (!/[0-9]/.test(formData.password)) {
-        passwordErrors.push("Must include at least one number")
-      }
-
-      if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(formData.password)) {
-        passwordErrors.push("Must include at least one special character")
-      }
-
-      if (/\s/.test(formData.password)) {
-        passwordErrors.push("Must not contain whitespace")
-      }
-
-      // Check for common passwords
-      if (COMMON_PASSWORDS.includes(formData.password.toLowerCase())) {
-        passwordErrors.push("Password is too common and easily guessed")
-      }
-
-      // If there are any password errors, join them with line breaks
-      if (passwordErrors.length > 0) {
-        newErrors.password = passwordErrors.join(", ")
+      // Check for common passwords (abbreviated list)
+      const commonPasswords = ["password", "123456", "qwerty", "admin", "welcome"]
+      if (commonPasswords.includes(formData.password.toLowerCase())) {
+        newErrors.password = "Password is too common and easily guessed"
       }
     }
 
@@ -131,27 +89,24 @@ export default function Register() {
     if (validateForm()) {
       setIsSubmitting(true)
 
-      // Simulate API call
-      setTimeout(() => {
-        setIsSubmitting(false)
-
-        // Store user data in memory (global variable)
-        if (typeof window !== "undefined") {
-          window.userData = {
-            email: formData.email,
-            username: formData.username,
-          }
+      // Store registration data globally for face capture step
+      if (typeof window !== "undefined") {
+        window.registerData = {
+          email: formData.email,
+          username: formData.username,
+          password: formData.password,
         }
+      }
 
-        // Redirect to face capture after successful registration
-        router.push("/face-capture?mode=register")
-      }, 1000)
+      setIsSubmitting(false)
+      // Redirect to face capture step (implement this route/page)
+      router.push("/face-capture?mode=register")
     }
   }
 
   return (
     <>
-      <SharedHeader />
+      <Header />
       <main className="page-content">
         <div className="container">
           <div className={styles.formContainer}>
@@ -159,7 +114,7 @@ export default function Register() {
               <h1 className={styles.formTitle}>Create an Account</h1>
               <p className={styles.formSubtitle}>Join FaceSecure for enhanced login security with facial recognition</p>
 
-              <form className={styles.form} onSubmit={handleSubmit}>
+               <form className={styles.form} onSubmit={handleSubmit}>
                 <FormInput
                   label="Email"
                   type="email"
@@ -191,7 +146,7 @@ export default function Register() {
                   value={formData.password}
                   onChange={handleChange}
                   error={errors.password}
-                  placeholder="Min. 12 chars with letters, numbers & symbols"
+                  placeholder="Create a secure password"
                   required
                   aria-required="true"
                   aria-describedby="password-requirements"
@@ -215,12 +170,10 @@ export default function Register() {
                   {isSubmitting ? "Creating Account..." : "Create Account"}
                 </Button>
               </form>
-
               <p className={styles.formFooter}>
                 Already have an account? <a href="/login">Login</a>
               </p>
-            </div>
-          </div>
+            </div>          </div>
         </div>
       </main>
     </>

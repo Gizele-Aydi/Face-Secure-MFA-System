@@ -21,20 +21,21 @@ export default function FaceCapture() {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    // Only allow login mode
-    console.log("Face capture mode:", mode)
-    if (mode !== "login") {
-      console.log("Invalid mode, redirecting to /login")
+    // Allow both login and register modes
+    if (mode !== "login" && mode !== "register") {
       router.push("/login")
       return
     }
-    if (typeof window !== "undefined" && !window.loginData) {
-      console.log("No login data found, redirecting to /login")
+    if (mode === "login" && typeof window !== "undefined" && !window.loginData) {
       router.push("/login")
+      return
+    }
+    if (mode === "register" && typeof window !== "undefined" && !window.registerData) {
+      router.push("/register")
+      return
     }
     if (typeof window !== "undefined") {
-      setUserData(window.loginData)
-      console.log("Loaded userData for login:", window.loginData)
+      setUserData(mode === "login" ? window.loginData : window.registerData)
     }
   }, [mode, router])
 
@@ -42,25 +43,38 @@ export default function FaceCapture() {
     // Store the image in our in-memory object
     if (imageData) {
       faceImageStore[mode] = imageData
-      console.log("Face image captured for login:", imageData)
     }
 
     setCaptureComplete(true)
     setError(null)
-    console.log("Face capture complete, sending authentication request...")
 
     try {
-      const loginData = typeof window !== "undefined" ? window.loginData : null
-      if (!loginData) {
-        setError("No login data found. Please login again.")
-        router.push("/login")
+      let dataToSend
+      let endpoint
+      if (mode === "login") {
+        dataToSend = window.loginData
+        endpoint = "http://127.0.0.1:8000/signin"
+      } else {
+        dataToSend = window.registerData
+        endpoint = "http://127.0.0.1:8000/signup"
+      }
+
+      if (!dataToSend) {
+        setError("No user data found. Please try again.")
+        router.push(mode === "login" ? "/login" : "/register")
         return
       }
 
       // Prepare FormData for multipart/form-data POST
       const formData = new FormData()
-      formData.append("username", loginData.email)
-      formData.append("password", loginData.password)
+      if (mode === "login") {
+        formData.append("username", dataToSend.email)
+        formData.append("password", dataToSend.password)
+      } else {
+        formData.append("username", dataToSend.username)
+        formData.append("email", dataToSend.email)
+        formData.append("password", dataToSend.password)
+      }
 
       // Convert base64 image to Blob if needed
       let blob
@@ -79,7 +93,7 @@ export default function FaceCapture() {
       }
       formData.append("face", blob, "face.png")
 
-      const response = await fetch("http://127.0.0.1:8000/signin", {
+      const response = await fetch(endpoint, {
         method: "POST",
         body: formData,
       })
@@ -92,7 +106,6 @@ export default function FaceCapture() {
       }
 
       if (!response.ok) {
-        // Handle FastAPI validation errors (422)
         if (data && data.detail) {
           if (Array.isArray(data.detail)) {
             setError(data.detail.map(e => e.msg).join(", "))
@@ -108,14 +121,18 @@ export default function FaceCapture() {
         return
       }
 
-      // For login mode, set authentication flag and redirect to dashboard
+      // Set authentication and redirect
       if (typeof window !== "undefined") {
         window.isAuthenticated = true
-        window.authenticatedUser = {
-          username: loginData.email?.split("@")[0] || "User",
-          email: loginData.email || "user@example.com",
-        }
-        console.log("User authenticated, redirecting to /dashboard")
+        window.authenticatedUser = mode === "login"
+          ? {
+              username: dataToSend.email?.split("@")[0] || "User",
+              email: dataToSend.email || "user@example.com",
+            }
+          : {
+              username: dataToSend.username,
+              email: dataToSend.email,
+            }
       }
       router.push("/dashboard")
     } catch (err) {

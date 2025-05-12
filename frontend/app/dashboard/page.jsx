@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 import SharedHeader from "../../components/shared-header"
 import Button from "../../components/ui/button"
 import styles from "./dashboard.module.css"
@@ -30,13 +30,31 @@ export default function Dashboard() {
     }
   }, [router])
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Optionally get token from localStorage or window if you store it
+    let token = null
+    if (typeof window !== "undefined" && window.accessToken) {
+      token = window.accessToken
+    }
+
+    try {
+      await fetch("http://127.0.0.1:8000/logout", {
+        method: "POST",
+        headers: token
+          ? { Authorization: `Bearer ${token}` }
+          : {},
+      })
+    } catch (e) {
+      // Ignore errors for logout
+    }
+
     // Clear authentication
     if (typeof window !== "undefined") {
       window.isAuthenticated = false
       window.authenticatedUser = null
       window.userData = null
       window.loginData = null
+      window.accessToken = null
     }
 
     // Redirect to home

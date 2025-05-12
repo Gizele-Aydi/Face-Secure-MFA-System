@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import SharedHeader from "../../components/shared-header"
-import FormInput from "../../components/ui/form-input"
+import { useEffect, useState } from "react"
+import Header from "../../components/header"
 import Button from "../../components/ui/button"
+import FormInput from "../../components/ui/form-input"
 import styles from "./login.module.css"
 
 export default function Login() {
@@ -63,17 +63,17 @@ export default function Login() {
     if (validateForm()) {
       setIsSubmitting(true)
 
+      // Store login credentials in memory (global variable)
+      if (typeof window !== "undefined") {
+        window.loginData = {
+          email: formData.email,
+          password: formData.password,
+        }
+      }
+
       // Simulate API call
       setTimeout(() => {
         setIsSubmitting(false)
-
-        // Store login credentials in memory (global variable)
-        if (typeof window !== "undefined") {
-          window.loginData = {
-            email: formData.email,
-            password: formData.password,
-          }
-        }
 
         // Redirect to face verification
         router.push("/face-capture?mode=login")
@@ -83,7 +83,7 @@ export default function Login() {
 
   return (
     <>
-      <SharedHeader />
+      <Header />
       <main className="page-content">
         <div className="container">
           <div className={styles.formContainer}>

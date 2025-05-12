@@ -54,6 +54,15 @@ def create_access_token(data: dict) -> str:
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 app = FastAPI()
 
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Or specify ["http://localhost:3000"] for more security
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 async def decode_face(file: UploadFile) -> np.ndarray:
     data = await file.read()
     arr = np.frombuffer(data, np.uint8)
@@ -178,3 +187,17 @@ async def get_current_user(
 @app.get("/me")
 async def read_me(current_user: dict = Depends(get_current_user)):
     return current_user
+
+@app.get("/users")
+def get_all_users(db: Session = Depends(get_db)):
+    users = db.query(User).all()
+    return [
+        {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "created_at": user.created_at,
+            # Do not return password_hash or face_embedding in production!
+        }
+        for user in users
+    ]
