@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useEffect, useRef, useState } from "react"
 import styles from "./camera.module.css"
 import Button from "./ui/button"
 
@@ -123,7 +123,7 @@ export default function Camera({ onCapture, mode }) {
     }
 
     setIsCapturing(true)
-    setCountdown(5) // Start 5-second countdown
+    setCountdown(3) // Start 3-second countdown
 
     // Countdown timer
     const countdownInterval = setInterval(() => {

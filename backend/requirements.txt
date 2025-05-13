@@ -7,9 +7,10 @@ passlib[bcrypt]
 python-jose[cryptography]
 deepface
 python-multipart
-tensorflow
+tensorflow==2.10.1
 opencv-python
-numpy
+numpy==1.23.5
 jose
 passlib
 cors
+tf-keras
