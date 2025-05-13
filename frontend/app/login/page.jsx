@@ -123,9 +123,6 @@ export default function Login() {
                   aria-required="true"
                 />
 
-                <div className={styles.forgotPassword}>
-                  <a href="#">Forgot password?</a>
-                </div>
 
                 <Button type="submit" fullWidth disabled={isSubmitting}>
                   {isSubmitting ? "Logging in..." : "Login"}

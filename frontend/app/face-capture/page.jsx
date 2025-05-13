@@ -80,6 +80,19 @@ export default function FaceCapture() {
 
       // Add image to request
       const blob = await createImageBlob(imageData)
+      //////////
+      // Log blob info
+//      if (blob && blob.size > 0) {
+//  const url = URL.createObjectURL(blob);
+//  const a = document.createElement("a");
+//  a.href = url;
+//  a.download = "face.png";
+//  a.click();
+//  URL.revokeObjectURL(url);
+//}
+
+
+      /////////////
       formData.append("face", blob, "face.png")
 
       // Make API call
@@ -109,6 +122,14 @@ export default function FaceCapture() {
       const token = data.access_token || data.token
       if (!token) {
         throw new Error("No token received")
+      }
+
+      if (mode === "register") {
+        // Registration successful, redirect to login page
+        setAuthStatus("success")
+        setIsProcessing(false)
+        window.location.assign("/login")
+        return
       }
 
       await handleSuccessfulAuth(token)

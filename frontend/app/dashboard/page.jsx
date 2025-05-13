@@ -4,62 +4,62 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import SharedHeader from "../../components/shared-header"
 import Button from "../../components/ui/button"
+import { tokenManager } from "../auth-utils"
 import styles from "./dashboard.module.css"
+
 
 export default function Dashboard() {
   const router = useRouter()
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    // Check if user is authenticated
-    if (typeof window !== "undefined") {
-      if (!window.isAuthenticated) {
-        router.push("/login")
-        return
-      }
-
-      // Get user data
-      setUser(
-        window.authenticatedUser || {
-          username: "User",
-          email: "user@example.com",
-        },
-      )
-      setIsLoading(false)
-    }
-  }, [router])
-
-  const handleLogout = async () => {
-    // Optionally get token from localStorage or window if you store it
-    let token = null
-    if (typeof window !== "undefined" && window.accessToken) {
-      token = window.accessToken
+useEffect(() => {
+  const fetchUser = async () => {
+    const token = tokenManager.getToken()
+    if (!token) {
+      router.push("/login")
+      return
     }
 
     try {
-      await fetch("http://127.0.0.1:8000/logout", {
-        method: "POST",
-        headers: token
-          ? { Authorization: `Bearer ${token}` }
-          : {},
+      const res = await fetch("http://127.0.0.1:8000/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       })
-    } catch (e) {
-      // Ignore errors for logout
-    }
+      if (!res.ok) {
+        throw new Error("Unauthorized")
+      }
 
-    // Clear authentication
-    if (typeof window !== "undefined") {
-      window.isAuthenticated = false
-      window.authenticatedUser = null
-      window.userData = null
-      window.loginData = null
-      window.accessToken = null
+      const data = await res.json()
+      setUser({
+        username: data.username,
+        email: data.email,
+      })
+    } catch (err) {
+      console.error("Failed to fetch user data:", err)
+      router.push("/login")
+    } finally {
+      setIsLoading(false)
     }
-
-    // Redirect to home
-    router.push("/")
   }
+
+  fetchUser()
+}, [router])
+
+  const handleLogout = async () => {
+  try {
+    const token = tokenManager.getToken()
+    await fetch("http://127.0.0.1:8000/logout", {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+  } catch (e) {
+    // Ignore errors for logout
+  }
+  tokenManager.removeToken()
+  router.push("/")
+}
 
   if (isLoading) {
     return (

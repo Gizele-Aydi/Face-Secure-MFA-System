@@ -71,6 +71,8 @@ async def decode_face(file: UploadFile) -> np.ndarray:
         raise HTTPException(status_code=400, detail="Face processing error: cannot decode image")
     return img
 
+import shutil
+
 @app.post("/signup", status_code=status.HTTP_201_CREATED)
 async def signup(
     username: str = Form(...),
@@ -84,12 +86,12 @@ async def signup(
     if db.query(User).filter((User.username == username) | (User.email == email)).first():
         raise HTTPException(status_code=409, detail="Username or email already registered")
 
+
     img = await decode_face(face)
     try:
         reps = DeepFace.represent(
             img_path=img,
             model_name="Facenet",
-            
             detector_backend='mtcnn',
             enforce_detection=True,
             align=True
@@ -110,7 +112,6 @@ async def signup(
 
     token = create_access_token({"sub": user.username, "email": user.email})
     return {"access_token": token, "token_type": "bearer"}
-
 @app.post("/signin")
 async def signin(
     username: str = Form(...),
