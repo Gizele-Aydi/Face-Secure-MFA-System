@@ -24,7 +24,12 @@ export default function Login() {
     if (registered === "true") {
       setRegistrationSuccess(true)
     }
-  }, [registered])
+
+    const verificationFailed = searchParams.get("verification") === "failed"
+    if (verificationFailed) {
+      setErrors({ verification: "Face verification failed. Please try again." })
+    }
+  }, [registered, searchParams])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -98,6 +103,13 @@ export default function Login() {
                 </div>
               )}
 
+              {errors.verification && (
+                <div className={styles.errorMessage}>
+                  <span className={styles.errorIcon}>❌</span>
+                  <p>{errors.verification}</p>
+                </div>
+              )}
+
               <form className={styles.form} onSubmit={handleSubmit}>
                 <FormInput
                   label="Email or Username"
@@ -122,10 +134,6 @@ export default function Login() {
                   required
                   aria-required="true"
                 />
-
-                <div className={styles.forgotPassword}>
-                  <a href="#">Forgot password?</a>
-                </div>
 
                 <Button type="submit" fullWidth disabled={isSubmitting}>
                   {isSubmitting ? "Logging in..." : "Login"}

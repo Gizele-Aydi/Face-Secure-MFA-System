@@ -147,6 +147,42 @@
   z-index: 10;
 }
 
+/* Registration mode - neutral styling */
+.registerSuccessOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.registerSuccessIcon {
+  font-size: 4rem;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5);
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 0.5s ease-out;
+}
+
+.registerSuccessText {
+  text-align: center;
+  font-weight: 500;
+}
+
+.registerComplete {
+  transform: scale(0.95);
+}
+
+/* Login mode - colored styling */
 .successOverlay {
   position: absolute;
   top: 0;
@@ -179,11 +215,54 @@
 }
 
 .successText {
+  text-align: center;
+  font-weight: 500;
   color: var(--success);
 }
 
 .complete {
   transform: scale(0.95);
+}
+
+/* Verification success/failure */
+.verificationSuccess {
+  box-shadow: 0 0 0 4px var(--success), 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.verificationFailure {
+  box-shadow: 0 0 0 4px var(--error), 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Error overlay for verification failure */
+.errorOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(239, 68, 68, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.errorIcon {
+  font-size: 4rem;
+  color: white;
+  background-color: var(--error);
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 0.5s ease-out;
+}
+
+.errorText {
+  text-align: center;
+  font-weight: 500;
+  color: var(--error);
 }
 
 @keyframes spin {

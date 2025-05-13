@@ -58,6 +58,18 @@
   color: var(--primary);
 }
 
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  transition: none;
+}
+
+.disabled:hover {
+  transform: none;
+  color: inherit;
+}
+
 @media (max-width: 640px) {
   .logoText {
     display: none;

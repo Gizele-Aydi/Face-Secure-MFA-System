@@ -12,6 +12,7 @@ export default function Camera({ onCapture, mode }) {
   const [error, setError] = useState(null)
   const [isCapturing, setIsCapturing] = useState(false)
   const [captureComplete, setCaptureComplete] = useState(false)
+  const [verificationResult, setVerificationResult] = useState(null) // 'success' or 'failure'
   const [countdown, setCountdown] = useState(null)
   const [cameraReady, setCameraReady] = useState(false)
 
@@ -136,12 +137,26 @@ export default function Camera({ onCapture, mode }) {
 
           // Complete the capture process
           setIsCapturing(false)
-          setCaptureComplete(true)
 
-          // Notify parent component after a short delay
-          setTimeout(() => {
-            onCapture(imageData)
-          }, 1000)
+          // For login mode, simulate verification result (success/failure)
+          if (mode === "login") {
+            // Simulate verification (70% chance of success)
+            const isSuccess = Math.random() < 0.7
+            setVerificationResult(isSuccess ? "success" : "failure")
+
+            // Notify parent component after a short delay
+            setTimeout(() => {
+              onCapture(imageData, isSuccess)
+            }, 2000)
+          } else {
+            // For registration, always succeed but without colors
+            setCaptureComplete(true)
+
+            // Notify parent component after a short delay
+            setTimeout(() => {
+              onCapture(imageData, true)
+            }, 1000)
+          }
 
           return null
         }
@@ -164,7 +179,12 @@ export default function Camera({ onCapture, mode }) {
       <div className={styles.cameraContainer}>
         {/* Always render the video element */}
         <div
-          className={`${styles.videoContainer} ${isCapturing ? styles.capturing : ""} ${captureComplete ? styles.complete : ""}`}
+          className={`${styles.videoContainer} 
+            ${isCapturing ? styles.capturing : ""} 
+            ${captureComplete && mode === "register" ? styles.registerComplete : ""} 
+            ${captureComplete && mode === "login" ? styles.complete : ""} 
+            ${verificationResult === "success" ? styles.verificationSuccess : ""} 
+            ${verificationResult === "failure" ? styles.verificationFailure : ""}`}
         >
           <video
             ref={videoRef}
@@ -185,9 +205,27 @@ export default function Camera({ onCapture, mode }) {
             </div>
           )}
 
-          {captureComplete && (
+          {captureComplete && mode === "register" && (
+            <div className={styles.registerSuccessOverlay}>
+              <span className={styles.registerSuccessIcon}>✓</span>
+            </div>
+          )}
+
+          {captureComplete && mode === "login" && (
             <div className={styles.successOverlay}>
               <span className={styles.successIcon}>✓</span>
+            </div>
+          )}
+
+          {verificationResult === "success" && (
+            <div className={styles.successOverlay}>
+              <span className={styles.successIcon}>✓</span>
+            </div>
+          )}
+
+          {verificationResult === "failure" && (
+            <div className={styles.errorOverlay}>
+              <span className={styles.errorIcon}>✗</span>
             </div>
           )}
 
@@ -223,7 +261,7 @@ export default function Camera({ onCapture, mode }) {
             </div>
           )}
 
-          {cameraReady && !isCapturing && !captureComplete && (
+          {cameraReady && !isCapturing && !verificationResult && !captureComplete && (
             <div className={styles.captureControls}>
               <ul className={styles.instructionsList}>
                 <li>Position your face inside the oval</li>
@@ -238,10 +276,16 @@ export default function Camera({ onCapture, mode }) {
 
           {isCapturing && <p className={styles.captureStatus}>Please hold still... Capturing in {countdown} seconds</p>}
 
-          {captureComplete && (
-            <p className={styles.successText}>
-              {mode === "register" ? "Face registered successfully!" : "Face verified successfully!"}
-            </p>
+          {captureComplete && mode === "register" && (
+            <p className={styles.registerSuccessText}>Face registered successfully!</p>
+          )}
+
+          {captureComplete && mode === "login" && <p className={styles.successText}>Face captured successfully!</p>}
+
+          {verificationResult === "success" && <p className={styles.successText}>Face verified successfully!</p>}
+
+          {verificationResult === "failure" && (
+            <p className={styles.errorText}>Face verification failed. Please try again.</p>
           )}
         </div>
       </div>

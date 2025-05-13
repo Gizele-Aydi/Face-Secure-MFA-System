@@ -40,7 +40,8 @@ export default function FaceCapture() {
     }
   }, [mode, router])
 
-  const handleCapture = (imageData) => {
+  // Update the handleCapture function to accept a success parameter
+  const handleCapture = (imageData, isSuccess) => {
     // Store the image in our in-memory object
     if (imageData) {
       faceImageStore[mode] = imageData
@@ -54,15 +55,21 @@ export default function FaceCapture() {
         // After registration, redirect to login page
         router.push("/login?registered=true")
       } else {
-        // For login mode, set authentication flag and redirect to dashboard
-        if (typeof window !== "undefined") {
-          window.isAuthenticated = true
-          window.authenticatedUser = window.userData || {
-            username: window.loginData?.email?.split("@")[0] || "User",
-            email: window.loginData?.email || "user@example.com",
+        // For login mode, check if verification was successful
+        if (isSuccess) {
+          // Set authentication flag and redirect to dashboard
+          if (typeof window !== "undefined") {
+            window.isAuthenticated = true
+            window.authenticatedUser = window.userData || {
+              username: window.loginData?.email?.split("@")[0] || "User",
+              email: window.loginData?.email || "user@example.com",
+            }
           }
+          router.push("/dashboard")
+        } else {
+          // If verification failed, redirect back to login
+          router.push("/login?verification=failed")
         }
-        router.push("/dashboard")
       }
     }, 1000)
   }
