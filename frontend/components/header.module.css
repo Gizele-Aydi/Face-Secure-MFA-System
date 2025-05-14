@@ -58,8 +58,23 @@
   color: var(--primary);
 }
 
+/* Disabled link style - no hover effects, visually disabled */
+.disabledLink {
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}
+
 @media (max-width: 640px) {
   .logoText {
     display: none;
   }
+
+}
+.disabled {
+  pointer-events: none;
+  opacity: 0.5;
+  cursor: default;
 }

@@ -9,7 +9,7 @@ import styles from "./face-capture.module.css"
 
 const faceImageStore = {
   login: null,
-  register: null
+  register: null,
 }
 
 export default function FaceCapture() {
@@ -18,8 +18,7 @@ export default function FaceCapture() {
   const mode = searchParams.get("mode") || "login"
   const [captureComplete, setCaptureComplete] = useState(false)
   const [error, setError] = useState(null)
-  const [authStatus, setAuthStatus] = useState(null)
-  const [isProcessing, setIsProcessing] = useState(false)
+  const [verificationStatus, setVerificationStatus] = useState(null) // null, "processing", "success", "error"
   const isSubmitting = useRef(false)
   const controllerRef = useRef(null)
 
@@ -33,21 +32,22 @@ export default function FaceCapture() {
   const handleSuccessfulAuth = async (token) => {
     // 1. First ensure token is properly stored
     tokenManager.setToken(token)
-    
+
     // 2. Verify token was actually stored
-    await new Promise(resolve => setTimeout(resolve, 50))
+    await new Promise((resolve) => setTimeout(resolve, 50))
     const storedToken = tokenManager.getToken()
-    
+
     if (!storedToken) {
       throw new Error("Token storage failed")
     }
 
-    // 3. Update UI state
-    setAuthStatus("success")
-    setIsProcessing(false)
-    
+    // 3. Update UI state - Only set success status after verification is complete
+    setVerificationStatus("success")
+
     // 4. Force hard redirect to ensure all auth state is initialized
-    window.location.assign("/dashboard")
+    setTimeout(() => {
+      window.location.assign("/dashboard")
+    }, 1500) // Short delay to show success state
   }
 
   const handleCapture = async (imageData) => {
@@ -59,7 +59,9 @@ export default function FaceCapture() {
       if (imageData) faceImageStore[mode] = imageData
       setCaptureComplete(true)
       setError(null)
-      setIsProcessing(true)
+
+      // IMPORTANT: Set to processing state immediately
+      setVerificationStatus("processing")
 
       // Verify user data exists
       const userData = mode === "login" ? window.loginData : window.registerData
@@ -80,41 +82,23 @@ export default function FaceCapture() {
 
       // Add image to request
       const blob = await createImageBlob(imageData)
-      //////////
-      // Log blob info
-//      if (blob && blob.size > 0) {
-//  const url = URL.createObjectURL(blob);
-//  const a = document.createElement("a");
-//  a.href = url;
-//  a.download = "face.png";
-//  a.click();
-//  URL.revokeObjectURL(url);
-//}
-
-
-      /////////////
       formData.append("face", blob, "face.png")
 
       // Make API call
       controllerRef.current = new AbortController()
       const timeout = setTimeout(() => controllerRef.current.abort(), 15000)
 
-      const response = await fetch(
-        mode === "login" 
-          ? "http://127.0.0.1:8000/signin" 
-          : "http://127.0.0.1:8000/signup",
-        {
-          method: "POST",
-          body: formData,
-          signal: controllerRef.current.signal
-        }
-      )
+      const response = await fetch(mode === "login" ? "http://127.0.0.1:8000/signin" : "http://127.0.0.1:8000/signup", {
+        method: "POST",
+        body: formData,
+        signal: controllerRef.current.signal,
+      })
 
       clearTimeout(timeout)
 
       // Handle response
       const data = await response.json().catch(() => ({}))
-      
+
       if (!response.ok) {
         throw new Error(data.detail || "Authentication failed")
       }
@@ -126,36 +110,35 @@ export default function FaceCapture() {
 
       if (mode === "register") {
         // Registration successful, redirect to login page
-        setAuthStatus("success")
-        setIsProcessing(false)
-        window.location.assign("/login")
+        setVerificationStatus("success")
+        setTimeout(() => {
+          window.location.assign("/login")
+        }, 1500) // Short delay to show success state
         return
       }
 
       await handleSuccessfulAuth(token)
-      
     } catch (error) {
       console.error("Auth error:", error)
       setError(error.message)
-      setAuthStatus("error")
+      setVerificationStatus("error")
     } finally {
-      setIsProcessing(false)
       isSubmitting.current = false
     }
   }
 
   const createImageBlob = async (imageData) => {
     if (!imageData.startsWith("data:")) return imageData
-    
+
     const arr = imageData.split(",")
     const mime = arr[0].match(/:(.*?);/)[1]
     const bstr = atob(arr[1])
     const u8arr = new Uint8Array(bstr.length)
-    
+
     for (let i = 0; i < bstr.length; i++) {
       u8arr[i] = bstr.charCodeAt(i)
     }
-    
+
     return new Blob([u8arr], { type: mime })
   }
 
@@ -167,45 +150,22 @@ export default function FaceCapture() {
           <div className={styles.captureContainer}>
             <div className={styles.captureCard}>
               <h1 className={styles.captureTitle}>Verify Your Identity</h1>
-              <p className={styles.captureSubtitle}>
-                Look at the camera to verify your identity
-              </p>
+              <p className={styles.captureSubtitle}>Look at the camera to verify your identity</p>
 
-              <div className={styles.cameraContainer}>
-                <Camera 
-                  onCapture={handleCapture} 
+              {/* Camera component with verification status */}
+              <div className={styles.cameraWrapper}>
+                <Camera
+                  onCapture={handleCapture}
                   mode={mode}
-                  disabled={isProcessing}
+                  disabled={verificationStatus === "processing"}
+                  verificationStatus={verificationStatus}
                 />
-
-                {captureComplete && (
-                  <div className={`${styles.statusOverlay} ${
-                    isProcessing ? styles.processingStatus :
-                    authStatus === "success" ? styles.successStatus :
-                    authStatus === "error" ? styles.errorStatus : ""
-                  }`}>
-                    {isProcessing && (
-                      <div className={styles.processingIndicator}>
-                        <div className={styles.spinner}></div>
-                        <span>Verifying...</span>
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
 
-              {error && (
-                <div className={styles.errorMessage}>
-                  {error.toString()}
-                </div>
-              )}
+              {error && <div className={styles.errorMessage}>{error.toString()}</div>}
 
               <div className={styles.captureActions}>
-                <Button 
-                  variant="outline" 
-                  href={`/${mode}`} 
-                  disabled={isProcessing}
-                >
+                <Button variant="outline" href={`/${mode}`} disabled={verificationStatus === "processing"}>
                   Go Back
                 </Button>
               </div>

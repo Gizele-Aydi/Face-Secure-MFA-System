@@ -2,14 +2,21 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
+}
+
+.cameraContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 1.5rem;
   width: 100%;
+  max-width: 500px;
 }
 
 .videoContainer {
   position: relative;
   width: 100%;
-  max-width: 400px;
   aspect-ratio: 4 / 3;
   border-radius: 1rem;
   overflow: hidden;
@@ -23,43 +30,45 @@
   height: 100%;
   object-fit: cover;
   transform: scaleX(-1); /* Mirror effect */
+  background-color: #000;
 }
 
-.faceGuide {
+.hiddenCanvas {
+  display: none;
+}
+
+/* Oval face guide */
+.faceGuideOval {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  border: 2px dashed rgba(255, 255, 255, 0.5);
+  width: 220px;
+  height: 280px;
+  border-radius: 50% / 60%;
+  border: 2px dashed rgba(255, 255, 255, 0.7);
   pointer-events: none;
+  animation: pulse 3s infinite ease-in-out;
 }
 
-.instructions {
-  text-align: center;
-  max-width: 400px;
-}
-
-.instructions p {
-  margin-bottom: 1rem;
-}
-
-.loadingState,
-.errorState {
+.controls {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 1rem;
-  width: 100%;
-  max-width: 400px;
-  aspect-ratio: 4 / 3;
-  background-color: var(--card);
-  border-radius: 1rem;
-  padding: 2rem;
+}
+
+.statusIndicator,
+.errorIndicator,
+.startPrompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
   text-align: center;
+  width: 100%;
 }
 
 .spinner {
@@ -73,38 +82,110 @@
 
 .errorIcon {
   font-size: 2rem;
+  color: var(--error);
+}
+
+.captureControls {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.instructionsList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+  text-align: left;
+  width: 100%;
+}
+
+.instructionsList li {
+  margin-bottom: 0.5rem;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.instructionsList li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.5rem;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--primary);
 }
 
 .capturing {
   box-shadow: 0 0 0 4px var(--primary), 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
-.scanOverlay {
+.countdownOverlay {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   pointer-events: none;
 }
 
-.scanLine {
+.countdown {
+  font-size: 6rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}
+
+/* Processing overlay */
+.processingOverlay {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 4px;
-  background: linear-gradient(90deg, transparent, var(--primary), transparent);
-  animation: scan 2s linear infinite;
+  height: 100%;
+  background-color: rgba(128, 128, 128, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
+.processingSpinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px;
+}
+
+.processingText {
+  color: var(--foreground);
+  font-size: 1rem;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Success overlay */
 .successOverlay {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(6, 214, 160, 0.3);
+  background-color: rgba(16, 185, 129, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -113,19 +194,55 @@
 .successIcon {
   font-size: 4rem;
   color: white;
-  background-color: var(--success);
+  background-color: rgba(16, 185, 129, 0.8);
   width: 80px;
   height: 80px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: pulse 0.5s ease-out;
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Error overlay */
+.errorOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(239, 68, 68, 0.2); /* Lighter red background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.errorIcon {
+  font-size: 4rem;
+  color: white;
+  background-color: rgba(239, 68, 68, 0.8);
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.captureStatus,
+.successText,
+.errorText {
+  text-align: center;
+  font-weight: 500;
 }
 
 .successText {
-  color: var(--success);
-  font-weight: 600;
+  color: var(--success, #10b981);
+}
+
+.errorText {
+  color: var(--error, #ef4444);
 }
 
 .complete {
@@ -138,29 +255,29 @@
   }
 }
 
-@keyframes scan {
+@keyframes pulse {
   0% {
-    top: 0;
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(0.98);
   }
   50% {
-    top: 100%;
-  }
-  50.1% {
-    top: 0;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
   }
   100% {
-    top: 100%;
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(0.98);
   }
 }
 
-@keyframes pulse {
-  0% {
-    transform: scale(0);
+@keyframes fadeIn {
+  from {
     opacity: 0;
+    transform: scale(0.8);
   }
-  100% {
-    transform: scale(1);
+  to {
     opacity: 1;
+    transform: scale(1);
   }
 }
 
@@ -169,8 +286,8 @@
     max-width: 100%;
   }
 
-  .faceGuide {
-    width: 150px;
-    height: 150px;
+  .faceGuideOval {
+    width: 180px;
+    height: 230px;
   }
 }

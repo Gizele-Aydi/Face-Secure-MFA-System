@@ -43,104 +43,12 @@
   }
 }
 
-.capturePreview {
-  position: relative;
+/* Added wrapper to ensure proper positioning */
+.cameraWrapper {
   width: 100%;
-  max-width: 400px;
-  margin: 0 auto 2rem;
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
-.previewImage {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.cameraContainer {
-  position: relative;
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto 2rem;
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
-.statusOverlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.3s ease;
-  pointer-events: none;
-}
-
-.successStatus {
-  background-color: rgba(0, 128, 0, 0.3);
-  animation: pulseGreen 1s;
-}
-
-.errorStatus {
-  background-color: rgba(255, 0, 0, 0.3);
-  animation: pulseRed 1s;
-}
-
-/* Added neutral processing status */
-.processingStatus {
-  background-color: rgba(128, 128, 128, 0.3);
-}
-
-.statusIcon {
-  font-size: 5rem;
-  color: white;
-  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-}
-
-.captureActions {
   display: flex;
   justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-  margin-top: 1.5rem;
-}
-
-.authButton {
-  background-color: var(--primary);
-  color: white;
-  min-width: 150px;
-}
-
-.backButton,
-.retakeButton {
-  min-width: 120px;
-}
-
-.loadingIndicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--foreground);
-  font-size: 0.9rem;
-  margin: 0 1rem;
-  position: relative;
-  padding-left: 1.5rem;
-}
-
-.loadingIndicator:before {
-  content: "";
-  position: absolute;
-  left: 0;
-  width: 1rem;
-  height: 1rem;
-  border-radius: 50%;
-  border: 2px solid var(--border);
-  border-top-color: var(--primary);
-  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
 }
 
 .errorMessage {
@@ -152,54 +60,21 @@
   border-radius: 0 var(--radius) var(--radius) 0;
 }
 
-.processingIndicator {
+.captureActions {
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  color: white;
-  text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
 }
 
-.spinner {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
-  animation: spin 1s linear infinite;
-  margin-bottom: 10px;
-}
-
-@keyframes pulseGreen {
-  0% {
-    background-color: rgba(0, 128, 0, 0);
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  50% {
-    background-color: rgba(0, 128, 0, 0.5);
-  }
-  100% {
-    background-color: rgba(0, 128, 0, 0.3);
-  }
-}
-
-@keyframes pulseRed {
-  0% {
-    background-color: rgba(255, 0, 0, 0);
-  }
-  50% {
-    background-color: rgba(255, 0, 0, 0.5);
-  }
-  100% {
-    background-color: rgba(255, 0, 0, 0.3);
-  }
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

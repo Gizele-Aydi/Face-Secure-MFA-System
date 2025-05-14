@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import styles from "./camera.module.css"
 import Button from "./ui/button"
 
-export default function Camera({ onCapture, mode }) {
+export default function Camera({ onCapture, mode, disabled, verificationStatus }) {
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const [stream, setStream] = useState(null)
@@ -14,6 +14,7 @@ export default function Camera({ onCapture, mode }) {
   const [captureComplete, setCaptureComplete] = useState(false)
   const [countdown, setCountdown] = useState(null)
   const [cameraReady, setCameraReady] = useState(false)
+  const [internalCaptureComplete, setInternalCaptureComplete] = useState(false)
 
   // Function to initialize the camera
   const initializeCamera = async () => {
@@ -136,12 +137,13 @@ export default function Camera({ onCapture, mode }) {
 
           // Complete the capture process
           setIsCapturing(false)
-          setCaptureComplete(true)
+          setInternalCaptureComplete(true) // Use internal state for UI
+          setCaptureComplete(true) // This is for the parent component
 
           // Notify parent component after a short delay
           setTimeout(() => {
             onCapture(imageData)
-          }, 1000)
+          }, 500)
 
           return null
         }
@@ -164,7 +166,7 @@ export default function Camera({ onCapture, mode }) {
       <div className={styles.cameraContainer}>
         {/* Always render the video element */}
         <div
-          className={`${styles.videoContainer} ${isCapturing ? styles.capturing : ""} ${captureComplete ? styles.complete : ""}`}
+          className={`${styles.videoContainer} ${isCapturing ? styles.capturing : ""} ${internalCaptureComplete ? styles.complete : ""}`}
         >
           <video
             ref={videoRef}
@@ -185,14 +187,35 @@ export default function Camera({ onCapture, mode }) {
             </div>
           )}
 
-          {captureComplete && (
-            <div className={styles.successOverlay}>
-              <span className={styles.successIcon}>✓</span>
-            </div>
+          {/* Verification status overlays - only show after capture is complete */}
+          {internalCaptureComplete && (
+            <>
+              {/* Processing overlay */}
+              {verificationStatus === "processing" && (
+                <div className={styles.processingOverlay}>
+                  <div className={styles.processingSpinner}></div>
+                  <span className={styles.processingText}>Verifying...</span>
+                </div>
+              )}
+
+              {/* Success overlay - only show when verification is successful */}
+              {verificationStatus === "success" && (
+                <div className={styles.successOverlay}>
+                  <span className={styles.successIcon}>✓</span>
+                </div>
+              )}
+
+              {/* Error overlay - show when verification fails */}
+              {verificationStatus === "error" && (
+                <div className={styles.errorOverlay}>
+                  <span className={styles.errorIcon}>✕</span>
+                </div>
+              )}
+            </>
           )}
 
-          {/* Oval face guide - only show when camera is ready */}
-          {cameraReady && <div className={styles.faceGuideOval}></div>}
+          {/* Oval face guide - only show when camera is ready and not after capture */}
+          {cameraReady && !internalCaptureComplete && <div className={styles.faceGuideOval}></div>}
         </div>
 
         {/* Status indicators and controls */}
@@ -223,14 +246,14 @@ export default function Camera({ onCapture, mode }) {
             </div>
           )}
 
-          {cameraReady && !isCapturing && !captureComplete && (
+          {cameraReady && !isCapturing && !internalCaptureComplete && (
             <div className={styles.captureControls}>
               <ul className={styles.instructionsList}>
                 <li>Position your face inside the oval</li>
                 <li>Keep still during the capture</li>
                 <li>Ensure good lighting on your face</li>
               </ul>
-              <Button variant="primary" onClick={handleCapture}>
+              <Button variant="primary" onClick={handleCapture} disabled={disabled}>
                 {mode === "register" ? "Capture Face" : "Verify Face"}
               </Button>
             </div>
@@ -238,10 +261,18 @@ export default function Camera({ onCapture, mode }) {
 
           {isCapturing && <p className={styles.captureStatus}>Please hold still... Capturing in {countdown} seconds</p>}
 
-          {captureComplete && (
+          {internalCaptureComplete && verificationStatus === "processing" && (
+            <p className={styles.processingText}>Verifying your identity...</p>
+          )}
+
+          {internalCaptureComplete && verificationStatus === "success" && (
             <p className={styles.successText}>
               {mode === "register" ? "Face registered successfully!" : "Face verified successfully!"}
             </p>
+          )}
+
+          {internalCaptureComplete && verificationStatus === "error" && (
+            <p className={styles.errorText}>Face verification failed. Please try again.</p>
           )}
         </div>
       </div>
