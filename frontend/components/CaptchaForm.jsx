@@ -8,28 +8,46 @@ export default function CaptchaForm({ onSuccess }) {
   const [error, setError] = useState(null);
 
   const handleCaptchaChange = (token) => {
-    setVerified(!!token);
+    console.log("CAPTCHA token received:", token);
+    const isValid = !!token;
+    setVerified(isValid);
+    if (isValid) onSuccess();
     setError(null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = recaptchaRef.current.getValue();
-    if (!token) return setError("Please complete the CAPTCHA");
+    console.log("Submitting CAPTCHA token to backend:", token);
 
-    const res = await fetch("http://localhost:5000/verify-captcha", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ token }),
-    });
+    if (!token) {
+      console.warn("No CAPTCHA token — user didn't complete the CAPTCHA");
+      return setError("Please complete the CAPTCHA");
+    }
 
-    const data = await res.json();
-    if (data.success) {
-      onSuccess(); // tell the parent component it’s good
-    } else {
-      setError("CAPTCHA verification failed");
+    try {
+      const res = await fetch("http://localhost:8000/verify-captcha", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token }),
+      });
+
+      console.log("Response status:", res.status);
+      const data = await res.json();
+      console.log("Response data:", data);
+
+      if (data.success) {
+        console.log("CAPTCHA verified successfully!");
+        onSuccess(); // notify parent
+      } else {
+        console.warn("CAPTCHA verification failed");
+        setError("CAPTCHA verification failed");
+      }
+    } catch (err) {
+      console.error("Error during CAPTCHA verification:", err);
+      setError("An error occurred while verifying CAPTCHA");
     }
   };
 
@@ -40,9 +58,9 @@ export default function CaptchaForm({ onSuccess }) {
         ref={recaptchaRef}
         onChange={handleCaptchaChange}
       />
-      {error && <p className="text-red-500">{error}</p>}
-      
-      
+      {!verified && error && (
+        <p className="text-red-500 text-sm">{error}</p>
+      )}
     </form>
   );
 }

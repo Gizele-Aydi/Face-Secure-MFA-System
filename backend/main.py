@@ -222,5 +222,6 @@ async def verify_captcha(data: CaptchaRequest):
                 "response": data.token
             }
         )
-    result = response.json()
+    result = await response.json()  
     return {"success": result.get("success", False)}
+
