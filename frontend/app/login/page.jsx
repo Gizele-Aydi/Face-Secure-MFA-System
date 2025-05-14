@@ -6,6 +6,7 @@ import Header from "../../components/header"
 import Button from "../../components/ui/button"
 import FormInput from "../../components/ui/form-input"
 import styles from "./login.module.css"
+import CaptchaForm from "../../components/CaptchaForm"
 
 export default function Login() {
   const router = useRouter()
@@ -19,6 +20,7 @@ export default function Login() {
   const [errors, setErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [registrationSuccess, setRegistrationSuccess] = useState(false)
+  const [captchaVerified, setCaptchaVerified] = useState(false);
 
   useEffect(() => {
     if (registered === "true") {
@@ -52,6 +54,11 @@ export default function Login() {
     if (!formData.password) {
       newErrors.password = "Password is required"
     }
+
+    // Captcha Validation
+    if (!captchaVerified) {
+      newErrors.recaptcha = "Please verify you are human";
+      } 
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -122,11 +129,12 @@ export default function Login() {
                   required
                   aria-required="true"
                 />
-
+                <CaptchaForm onSuccess={() => setCaptchaVerified(true)} />
+                {errors.recaptcha && <p style={{ color: "red" }}>{errors.recaptcha}</p>}
                 <div className={styles.forgotPassword}>
                   <a href="#">Forgot password?</a>
                 </div>
-
+                
                 <Button type="submit" fullWidth disabled={isSubmitting}>
                   {isSubmitting ? "Logging in..." : "Login"}
                 </Button>

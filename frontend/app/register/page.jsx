@@ -7,6 +7,8 @@ import Button from "../../components/ui/button"
 import FormInput from "../../components/ui/form-input"
 import PasswordStrength from "../../components/ui/password-strength"
 import styles from "./register.module.css"
+import CaptchaForm from "../../components/CaptchaForm";
+
 
 export default function Register() {
   const router = useRouter()
@@ -18,6 +20,7 @@ export default function Register() {
   })
   const [errors, setErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [captchaVerified, setCaptchaVerified] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -79,15 +82,25 @@ export default function Register() {
       newErrors.confirmPassword = "Passwords do not match"
     }
 
+    // Captcha Validation
+    if (!captchaVerified) {
+      newErrors.recaptcha = "Please verify that you are human";
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
+    const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (!captchaVerified) {
+      alert("Please verify that you are human");
+      return;
+    }
 
     if (validateForm()) {
-      setIsSubmitting(true)
+      setIsSubmitting(true);
 
       // Store registration data globally for face capture step
       if (typeof window !== "undefined") {
@@ -95,14 +108,14 @@ export default function Register() {
           email: formData.email,
           username: formData.username,
           password: formData.password,
-        }
+        };
       }
 
-      setIsSubmitting(false)
-      // Redirect to face capture step (implement this route/page)
-      router.push("/face-capture?mode=register")
+      setIsSubmitting(false);
+      router.push("/face-capture?mode=register");
     }
-  }
+  };
+
 
   return (
     <>
@@ -165,6 +178,8 @@ export default function Register() {
                   required
                   aria-required="true"
                 />
+                
+                 <CaptchaForm onSuccess={() => setCaptchaVerified(true)} />
 
                 <Button type="submit" fullWidth disabled={isSubmitting}>
                   {isSubmitting ? "Creating Account..." : "Create Account"}
