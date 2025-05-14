@@ -29,24 +29,32 @@
   margin-bottom: 2rem;
 }
 
+.successMessage {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 1px solid var(--success);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.successIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  background-color: var(--success);
+  color: white;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 .form {
   display: flex;
   flex-direction: column;
-}
-
-.forgotPassword {
-  text-align: right;
-  margin-top: -0.5rem;
-  margin-bottom: 1.5rem;
-  font-size: 0.875rem;
-}
-
-.forgotPassword a {
-  color: var(--primary);
-}
-
-.forgotPassword a:hover {
-  text-decoration: underline;
 }
 
 .formFooter {
@@ -64,10 +72,34 @@
   text-decoration: underline;
 }
 
+/* Add this style for the error message */
+.errorMessage {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--error);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.errorIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  background-color: var(--error);
+  color: white;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 @media (max-width: 640px) {
   .formCard {
     padding: 1.5rem;
     box-shadow: none;
     background-color: transparent;
   }
-}
+} 

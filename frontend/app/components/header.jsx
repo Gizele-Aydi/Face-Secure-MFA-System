@@ -4,7 +4,7 @@ import styles from "./header.module.css"
 
 export default function Header() {
   const pathname = usePathname()
-  const isDashboard = pathname.startsWith("/dashboard")
+  const isDashboard = pathname?.startsWith("/dashboard")
 
   return (
     <header className={styles.header}>

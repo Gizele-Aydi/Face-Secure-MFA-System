@@ -3,13 +3,16 @@ from datetime import datetime, timedelta
 
 import cv2
 import numpy as np
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form, status
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt,JWTError
 from passlib.context import CryptContext
 from sqlalchemy import Column, Integer, String, DateTime, JSON, create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
 from deepface import DeepFace
+
+from pydantic import BaseModel
+import httpx
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
@@ -202,3 +205,21 @@ def get_all_users(db: Session = Depends(get_db)):
         }
         for user in users
     ]
+
+SECRET_KEY = "6LdnajcrAAAAAJXiRDQ8TPJvHh93UXl92cftEoBw"
+
+class CaptchaRequest(BaseModel):
+    token: str
+
+@app.post("/verify-captcha")
+async def verify_captcha(data: CaptchaRequest):
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "https://www.google.com/recaptcha/api/siteverify",
+            data={
+                "secret": SECRET_KEY,
+                "response": data.token
+            }
+        )
+    result = await response.json()  
+    return {"success": result.get("success", False)}
