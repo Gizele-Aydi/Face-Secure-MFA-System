@@ -1,6 +1,5 @@
-<<<<<<< HEAD
+
 # Web-based-Facial-Recognition-Security-System
-=======
 # FaceAuth API
 
 A **FastAPI** application that provides:
@@ -157,7 +156,3 @@ bun dev
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
->>>>>>> 36f69aabc2023bdaeaf4f1e8c89c5f771d4dd739
