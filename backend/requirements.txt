@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+python-multipart
+SQLAlchemy
+psycopg2-binary
+passlib[bcrypt]
+python-jose[cryptography]
+deepface
+python-multipart
+tensorflow==2.10.1
+opencv-python
+numpy==1.23.5
+jose
+passlib
+cors
+tf-keras
