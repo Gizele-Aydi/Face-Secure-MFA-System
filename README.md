@@ -140,6 +140,11 @@ install next dependencies:
 ```bash
 npm install
 ```
+Install reCAPTCHA library:
+
+```bash
+npm install react-google-recaptcha
+```
 
 To run the development server:
 
