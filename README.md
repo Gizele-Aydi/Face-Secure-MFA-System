@@ -4,8 +4,8 @@
 
 A **FastAPI** application that provides:
 
-* **User signup** with username, email, password, and face embedding (using DeepFace/FaceNet)
-* **User signin** with two-factor authentication: password + face verification against stored embedding
+* **User signup** with username, email, password, face embedding (using DeepFace/FaceNet) and Google reCAPTCHA v2
+* **User signin** with two-factor authentication: password + face verification + Google reCAPTCHA v2
 * **Token-based auth** via JWT (Bearer tokens)
 * **Logout** endpoint (token revocation placeholder)
 * **Profile** endpoint (`/me`) to retrieve current user info
@@ -16,6 +16,7 @@ A **FastAPI** application that provides:
 
 * Face embeddings stored in a PostgreSQL database (JSON column)
 * Face detection, alignment, and embedding via DeepFace (Model: FaceNet)
+* reCAPTCHA v2 verification during both signup and signin
 * Secure password hashing with bcrypt (via Passlib)
 * JWT issuance and validation (via python-jose)
 * Easy configuration with environment variables
@@ -110,6 +111,8 @@ The API will be available at `http://127.0.0.1:8000` with Swagger UI at `/docs`.
   * `email`: string
   * `password`: string
   * `face`: file (JPEG/PNG image)
+  * `recaptcha_token`: string (from client reCAPTCHA)
+
 
 * **Response:** `201 Created`
 
